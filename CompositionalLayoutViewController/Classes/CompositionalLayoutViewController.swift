@@ -7,24 +7,25 @@
 
 import UIKit
 
-open class CompositionalLayoutViewController: UIViewController {
-    public var collectionView: UICollectionView!
+open class CompositionalLayoutViewController: UICollectionViewController {
+
     public var highlightedColor: UIColor?
     public var dataSource: UICollectionViewDiffableDataSource<AnyHashable, AnyHashable>!
     public weak var provider: SectionProvider?
 
+    public init() {
+        super.init(collectionViewLayout: UICollectionViewLayout())
+    }
+    
+    required public init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override open func viewDidLoad() {
         super.viewDidLoad()
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout(configuration: layoutConfiguration()))
-        collectionView.backgroundColor = .systemBackground
-        collectionView.delegate = self
-        view.addSubview(collectionView)
+        
+        collectionView.collectionViewLayout = layout(configuration: layoutConfiguration())
         collectionView.delaysContentTouches = false
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
 
         dataSource = UICollectionViewDiffableDataSource<AnyHashable, AnyHashable>(
             collectionView: collectionView
@@ -71,7 +72,7 @@ open class CompositionalLayoutViewController: UIViewController {
                 return nil
             }
             let section = provider.section(for: sectionIndex)
-            let layout = section.layoutSection(environment: environment)
+            let layout = section.layoutSection(collectionView, environment: environment)
             configureSection(section, layout: layout)
             return layout
         }, configuration: configuration)
@@ -104,30 +105,38 @@ open class CompositionalLayoutViewController: UIViewController {
         dataSource.apply(snapshot, animatingDifferences: animateWhenUpdate)
     }
 
-    open func reloadSections() {
+    open func reloadSections(animateWhenUpdate: Bool = true) {
         guard let provider = provider else {
             return
         }
-        updateDataSource(provider.sections)
+        updateDataSource(provider.sections, animateWhenUpdate: animateWhenUpdate)
     }
 
-    open func didSelectItem(at indexPath: IndexPath) {}
-}
+    open func didSelectItem(at indexPath: IndexPath) {
+        section(at: indexPath)?.didSelectItem(at: indexPath)
+    }
+    
+    func section(at indexPath: IndexPath) -> CollectionViewSection? {
+        guard let provider = provider else { return nil }
+        return provider.section(for: indexPath.section)
+    }
 
-extension CompositionalLayoutViewController: UICollectionViewDelegate {
-    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    // MARK: - UICollectionViewDelegate
+    
+    public override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         didSelectItem(at: indexPath)
     }
 
-    public func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+    public override func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
         if let cell = collectionView.cellForItem(at: indexPath) as? HighlightableCell, cell.clvc_isHighlightable {
             cell.contentView.backgroundColor = cell.clvc_highlightedColor
         }
     }
 
-    public func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+    public override func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
         if let cell = collectionView.cellForItem(at: indexPath) as? HighlightableCell, cell.clvc_isHighlightable {
             cell.contentView.backgroundColor = nil
         }
     }
+    
 }
