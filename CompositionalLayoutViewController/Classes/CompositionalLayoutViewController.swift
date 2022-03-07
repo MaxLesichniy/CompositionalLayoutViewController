@@ -10,7 +10,7 @@ import UIKit
 open class CompositionalLayoutViewController: UICollectionViewController {
 
     public var highlightedColor: UIColor?
-    public var dataSource: UICollectionViewDiffableDataSource<AnyHashable, AnyHashable>!
+    public var collectionViewDataSource: UICollectionViewDiffableDataSource<AnyHashable, AnyHashable>!
     public weak var provider: SectionProvider?
 
     public init() {
@@ -18,7 +18,7 @@ open class CompositionalLayoutViewController: UICollectionViewController {
     }
     
     required public init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
     }
     
     override open func viewDidLoad() {
@@ -27,38 +27,26 @@ open class CompositionalLayoutViewController: UICollectionViewController {
         collectionView.collectionViewLayout = layout(configuration: layoutConfiguration())
         collectionView.delaysContentTouches = false
 
-        dataSource = UICollectionViewDiffableDataSource<AnyHashable, AnyHashable>(
-            collectionView: collectionView
-        ) { [unowned self] _, indexPath, _ -> UICollectionViewCell? in
+        collectionViewDataSource = UICollectionViewDiffableDataSource<AnyHashable, AnyHashable>(collectionView: collectionView) { [unowned self] _, indexPath, _ -> UICollectionViewCell? in
             return cell(for: indexPath)
         }
-        dataSource.supplementaryViewProvider = { [unowned self] _, kind, indexPath in
+        collectionViewDataSource.supplementaryViewProvider = { [unowned self] _, kind, indexPath in
             return supplementaryView(for: kind, indexPath: indexPath)
         }
     }
 
     open func cell(for indexPath: IndexPath) -> UICollectionViewCell? {
-        guard let provider = provider else {
-            return nil
-        }
+        guard let provider = provider else { return nil }
         let section = provider.section(for: indexPath.section)
-        guard let cell = section.cell(collectionView, indexPath: indexPath) else {
-            return nil
-        }
+        guard let cell = section.cell(collectionView, indexPath: indexPath) else { return nil }
         configureCell(cell)
         return cell
     }
 
     open func supplementaryView(for kind: String, indexPath: IndexPath) -> UICollectionReusableView? {
-        guard let provider = provider else {
-            return nil
-        }
+        guard let provider = provider else { return nil }
         let section = provider.section(for: indexPath.section)
-        let view = section.supplementaryView(
-            collectionView,
-            kind: kind,
-            indexPath: indexPath
-        )
+        let view = section.supplementaryView(collectionView, kind: kind, indexPath: indexPath)
         if let view = view {
             section.configureSupplementaryView(view, indexPath: indexPath)
             configureSupplementaryView(view, indexPath: indexPath)
@@ -67,13 +55,11 @@ open class CompositionalLayoutViewController: UICollectionViewController {
     }
 
     open func layout(configuration: UICollectionViewCompositionalLayoutConfiguration) -> UICollectionViewCompositionalLayout {
-        return UICollectionViewCompositionalLayout(sectionProvider: { [unowned self] sectionIndex, environment -> NSCollectionLayoutSection? in
-            guard let provider = provider else {
-                return nil
-            }
+        return UICollectionViewCompositionalLayout(sectionProvider: { [weak self] sectionIndex, environment -> NSCollectionLayoutSection? in
+            guard let `self` = self, let provider = self.provider else { return nil }
             let section = provider.section(for: sectionIndex)
-            let layout = section.layoutSection(collectionView, environment: environment)
-            configureSection(section, layout: layout)
+            let layout = section.layoutSection(self.collectionView, environment: environment)
+            self.configureSection(section, layout: layout)
             return layout
         }, configuration: configuration)
     }
@@ -82,38 +68,41 @@ open class CompositionalLayoutViewController: UICollectionViewController {
         return UICollectionViewCompositionalLayoutConfiguration()
     }
 
-    open func configureCell(_ cell: UICollectionViewCell) {}
+    open func configureCell(_ cell: UICollectionViewCell) {
+        
+    }
 
-    open func configureSection(_ section: CollectionViewSection, layout: NSCollectionLayoutSection) {}
+    open func configureSection(_ section: CollectionViewSection, layout: NSCollectionLayoutSection) {
+        
+    }
 
-    open func configureSupplementaryView(_ view: UICollectionReusableView, indexPath: IndexPath) {}
+    open func configureSupplementaryView(_ view: UICollectionReusableView, indexPath: IndexPath) {
+        
+    }
 
-    open func registerViews(_ sections: [CollectionViewSection]) {
+    open func registerSections(_ sections: [CollectionViewSection]) {
         for section in sections {
-            section.registerCell(collectionView: collectionView)
-            section.registerSupplementaryView(collectionView: collectionView)
+            section.register(in: collectionView)
         }
     }
 
-    open func updateDataSource(_ sections: [CollectionViewSection], animateWhenUpdate: Bool = true) {
-        registerViews(sections)
+    open func updateDataSource(_ sections: [CollectionViewSection], animateWhenUpdate: Bool = true, completion: (() -> Void)? = nil) {
+        registerSections(sections)
         var snapshot = NSDiffableDataSourceSnapshot<AnyHashable, AnyHashable>()
         for section in sections {
             snapshot.appendSections([section.snapshotSection])
             snapshot.appendItems(section.snapshotItems, toSection: section.snapshotSection)
         }
-        dataSource.apply(snapshot, animatingDifferences: animateWhenUpdate)
+        collectionViewDataSource.apply(snapshot, animatingDifferences: animateWhenUpdate, completion: completion)
     }
 
-    open func reloadSections(animateWhenUpdate: Bool = true) {
-        guard let provider = provider else {
-            return
-        }
-        updateDataSource(provider.sections, animateWhenUpdate: animateWhenUpdate)
+    open func reloadSections(animateWhenUpdate: Bool = true, completion: (() -> Void)? = nil) {
+        guard let provider = provider else { return }
+        updateDataSource(provider.sections, animateWhenUpdate: animateWhenUpdate, completion: completion)
     }
 
     open func didSelectItem(at indexPath: IndexPath) {
-        section(at: indexPath)?.didSelectItem(at: indexPath)
+        section(at: indexPath)?.didSelectItem(at: indexPath, in: self)
     }
     
     func section(at indexPath: IndexPath) -> CollectionViewSection? {
