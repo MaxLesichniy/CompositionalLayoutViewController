@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 public protocol SectionProvider: AnyObject {
     var sections: [CollectionViewSection] { get }
 
