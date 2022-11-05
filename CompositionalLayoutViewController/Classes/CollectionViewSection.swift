@@ -23,6 +23,7 @@ public protocol CollectionViewSection {
     func supplementaryView(_ collectionView: UICollectionView, kind: String, indexPath: IndexPath) -> UICollectionReusableView?
     func configureSupplementaryView(_ view: UICollectionReusableView, indexPath: IndexPath)
     
+    #if os(iOS)
     func contextMenuConfiguration(_ context: Context, forItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration?
     func previewForHighlightingContextMenu(_ context: Context, withConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview?
     func previewForDismissingContextMenu(_ context: Context, withConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview?
@@ -31,6 +32,7 @@ public protocol CollectionViewSection {
     func willDisplayContextMenu(_ context: Context, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?)
     @available(iOS 13.2, *)
     func willEndContextMenuInteraction(_ context: Context, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?)
+    #endif
 }
 
 public extension CollectionViewSection {
@@ -42,6 +44,7 @@ public extension CollectionViewSection {
         return hasher.finalize()
     }
     
+    #if os(iOS)
     func contextMenuConfiguration(_ context: Context, forItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? { nil }
     func previewForHighlightingContextMenu(_ context: Context, withConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? { nil }
     func previewForDismissingContextMenu(_ context: Context, withConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? { nil }
@@ -50,4 +53,5 @@ public extension CollectionViewSection {
     func willDisplayContextMenu(_ context: Context, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {}
     @available(iOS 13.2, *)
     func willEndContextMenuInteraction(_ context: Context, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {}
+    #endif
 }
