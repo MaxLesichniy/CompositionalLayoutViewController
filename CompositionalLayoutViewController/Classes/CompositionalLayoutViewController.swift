@@ -27,7 +27,7 @@ open class CompositionalLayoutViewController: UICollectionViewController {
         collectionView.collectionViewLayout = layout(configuration: layoutConfiguration())
         collectionView.delaysContentTouches = false
 
-        collectionViewDataSource = UICollectionViewDiffableDataSource<AnyHashable, AnyHashable>(collectionView: collectionView) { [unowned self] _, indexPath, _ -> UICollectionViewCell? in
+        collectionViewDataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { [unowned self] _, indexPath, _ in
             return cell(for: indexPath)
         }
         collectionViewDataSource.supplementaryViewProvider = { [unowned self] _, kind, indexPath in
