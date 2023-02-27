@@ -13,6 +13,8 @@ open class CompositionalLayoutViewController: UICollectionViewController {
     public var collectionViewDataSource: UICollectionViewDiffableDataSource<AnyHashable, AnyHashable>!
     public weak var provider: SectionProvider?
 
+    // MARK: - Init
+    
     public init() {
         super.init(collectionViewLayout: UICollectionViewLayout())
     }
@@ -20,6 +22,8 @@ open class CompositionalLayoutViewController: UICollectionViewController {
     required public init?(coder: NSCoder) {
         super.init(coder: coder)
     }
+    
+    // MARK: - Life Cycle
     
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -105,9 +109,15 @@ open class CompositionalLayoutViewController: UICollectionViewController {
         section(at: indexPath)?.didSelectItem(at: indexPath, in: self)
     }
     
+    // MARK: -
+    
     func section(at indexPath: IndexPath) -> CollectionViewSection? {
         guard let provider = provider else { return nil }
         return provider.section(for: indexPath.section)
+    }
+    
+    func makeContext() -> Context {
+        Context(collectionView: collectionView, root: self)
     }
 
     // MARK: - UICollectionViewDelegate
@@ -127,5 +137,37 @@ open class CompositionalLayoutViewController: UICollectionViewController {
             cell.contentView.backgroundColor = nil
         }
     }
+    
+    // Context Menu
+    #if os(iOS)
+    open override func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        let section = section(at: indexPath)
+        let configuration = section?.contextMenuConfiguration(makeContext(), forItemAt: indexPath, point: point)
+        configuration?.section = section
+        return configuration
+    }
+    
+    open override func collectionView(_ collectionView: UICollectionView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        configuration.section?.previewForHighlightingContextMenu(makeContext(), withConfiguration: configuration)
+    }
+    
+    open override func collectionView(_ collectionView: UICollectionView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        configuration.section?.previewForDismissingContextMenu(makeContext(), withConfiguration: configuration)
+    }
+    
+    open override func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+        configuration.section?.willPerformPreviewAction(makeContext(), forMenuWith: configuration, animator: animator)
+    }
+    
+    @available(iOS 13.2, *)
+    open override func collectionView(_ collectionView: UICollectionView, willDisplayContextMenu configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
+        configuration.section?.willDisplayContextMenu(makeContext(), configuration: configuration, animator: animator)
+    }
+    
+    @available(iOS 13.2, *)
+    open override func collectionView(_ collectionView: UICollectionView, willEndContextMenuInteraction configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
+        configuration.section?.willEndContextMenuInteraction(makeContext(), configuration: configuration, animator: animator)
+    }
+    #endif
     
 }
