@@ -12,6 +12,7 @@ public struct Context {
     public let root: CompositionalLayoutViewController
 }
 
+@MainActor
 public protocol CollectionViewSection {
     var snapshotItems: [AnyHashable] { get }
     var snapshotSection: AnyHashable { get }
