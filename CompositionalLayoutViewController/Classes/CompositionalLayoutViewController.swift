@@ -99,10 +99,14 @@ open class CompositionalLayoutViewController: UICollectionViewController {
         }
         collectionViewDataSource.apply(snapshot, animatingDifferences: animateWhenUpdate, completion: completion)
     }
-
-    open func reloadSections(animateWhenUpdate: Bool = true, completion: (() -> Void)? = nil) {
+    
+    open func updateSections(animateWhenUpdate: Bool = true, completion: (() -> Void)? = nil) {
         guard let provider = provider else { return }
         updateDataSource(provider.sections, animateWhenUpdate: animateWhenUpdate, completion: completion)
+    }
+
+    open func reloadSections(animateWhenUpdate: Bool = true, completion: (() -> Void)? = nil) {
+        updateSections(animateWhenUpdate: animateWhenUpdate, completion: completion)
     }
 
     open func didSelectItem(at indexPath: IndexPath) {
