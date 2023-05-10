@@ -20,10 +20,10 @@ public protocol CollectionViewSection {
     func register(in collectionView: UICollectionView)
     func layoutSection(_ collectionView: UICollectionView, environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection
     func cell(_ collectionView: UICollectionView, indexPath: IndexPath) -> UICollectionViewCell?
-    func didSelectItem(at indexPath: IndexPath, in context: UIViewController)
     func supplementaryView(_ collectionView: UICollectionView, kind: String, indexPath: IndexPath) -> UICollectionReusableView?
     func configureSupplementaryView(_ view: UICollectionReusableView, indexPath: IndexPath)
-    
+    func didSelectItem(at indexPath: IndexPath, in context: UIViewController)
+
     #if os(iOS)
     func contextMenuConfiguration(_ context: Context, forItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration?
     func previewForHighlightingContextMenu(_ context: Context, withConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview?

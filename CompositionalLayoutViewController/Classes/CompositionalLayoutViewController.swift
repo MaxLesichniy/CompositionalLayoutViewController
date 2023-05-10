@@ -59,7 +59,7 @@ open class CompositionalLayoutViewController: UICollectionViewController {
     }
 
     open func layout(configuration: UICollectionViewCompositionalLayoutConfiguration) -> UICollectionViewCompositionalLayout {
-        return UICollectionViewCompositionalLayout(sectionProvider: { [weak self] sectionIndex, environment -> NSCollectionLayoutSection? in
+        return UICollectionViewCompositionalLayout(sectionProvider: { [weak self] (sectionIndex, environment) in
             guard let `self` = self, let provider = self.provider else { return nil }
             let section = provider.section(for: sectionIndex)
             let layout = section.layoutSection(self.collectionView, environment: environment)
