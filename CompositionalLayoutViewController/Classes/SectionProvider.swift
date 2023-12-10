@@ -18,4 +18,8 @@ public extension SectionProvider {
     func section(for sectionIndex: Int) -> CollectionViewSection {
         return sections[sectionIndex]
     }
+    
+    func sectionIndex(for section: CollectionViewSection) -> Int? {
+        return sections.firstIndex(where: { $0.snapshotSection == section.snapshotSection })
+    }
 }
