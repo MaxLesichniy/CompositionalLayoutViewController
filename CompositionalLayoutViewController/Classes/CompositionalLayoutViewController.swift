@@ -101,7 +101,7 @@ open class CompositionalLayoutViewController: UICollectionViewController {
     }
     
     open func updateSections(animateWhenUpdate: Bool = true, completion: (() -> Void)? = nil) {
-        guard let provider = provider else { return }
+        guard let provider else { return }
         updateDataSource(provider.sections, animateWhenUpdate: animateWhenUpdate, completion: completion)
     }
 
